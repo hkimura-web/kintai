@@ -49,9 +49,9 @@ const fhSt=r=>{if(!r.d1||(r.method==='半日×2'&&!r.d2))return'振替日未定'
 const fhY=y=>S.fh.filter(r=>r.work&&fy(r.work)===y);
 function otRem(){const o={};[...new Set(S.ot.map(r=>fy(r.date)))].forEach(y=>{let u=S.tu.filter(r=>fy(r.date)===y).reduce((a,r)=>a+(+r.hours||0),0);S.ot.filter(r=>fy(r.date)===y).sort((a,b)=>a.date<b.date?-1:1).forEach(r=>{const x=Math.min(u,+r.hours||0);u-=x;o[r.id]=(+r.hours||0)-x})});return o}
 function marks(){const m={},a=(d,t,s,c)=>{if(d)(m[d]=m[d]||[]).push([t,s,c])};
-S.yk.forEach(r=>a(r.date,r.kind==='全休'?'有給':r.kind==='半休'?'半休':'時間休',r.kind==='全休'?'有':r.kind==='半休'?'半':'時',r.kind==='全休'?'c1':'c2'));
+S.yk.forEach(r=>a(r.date,r.kind==='全休'?'有給':r.kind==='半休'?'半休':'時間休',r.kind==='全休'?'有給':r.kind==='半休'?'半休':'時間休',r.kind==='全休'?'c1':'c2'));
 S.tu.forEach(r=>a(r.date,'振替'+r.hours+'h','振'+r.hours+'h','c5'));
-S.fh.forEach(r=>{a(r.work,'休日出勤','出','c6');const h=r.method==='半日×2';[r.d1,r.d2].forEach(d=>a(d,r.kind==='振替休業'?'振替休業':h?'振替半日':'振替休日',h?'半振':'振',h?'c4':'c3'))});return m}
+S.fh.forEach(r=>{a(r.work,'休日出勤','休日出勤','c6');const h=r.method==='半日×2';[r.d1,r.d2].forEach(d=>a(d,r.kind==='振替休業'?'振替休業':h?'振替半日':'振替休日',r.kind==='振替休業'?'振替休業':h?'振替半日':'振替休日',h?'c4':'c3'))});return m}
 let sha=null,canWrite=false,busy=false,dirty=false;
 const CFG=()=>{try{return JSON.parse(localStorage.getItem('kcfg')||'{}')}catch{return{}}};
 const U8=s=>{const b=new TextEncoder().encode(s);let t='';for(let i=0;i<b.length;i+=8192)t+=String.fromCharCode(...b.subarray(i,i+8192));return btoa(t)};
@@ -106,7 +106,7 @@ return`<div style="margin-bottom:8px;display:flex;gap:4px;flex-wrap:wrap"><butto
 function calY(m,E,n){let h='<div class="wrap"><table class="cal"><tr>'+MS.map(x=>`<th>${x}月</th>`).join('')+'</tr>';
 for(let d=1;d<=31;d++){h+='<tr>';MS.forEach(mo=>{const yy=mo>=4?Y:Y+1,dt=new Date(yy,mo-1,d);if(dt.getMonth()!==mo-1){h+='<td class="na"></td>';return}
 const s=`${yy}-${pad(mo)}-${pad(d)}`,k=m[s]||[],e=E[s],w=dt.getDay(),off=w===0||(e&&e.hol==='○'),c=PRI.find(x=>k.some(a=>a[2]===x))||'';
-h+=`<td class="${c} ${s===n?'td':''} ${!c&&w===6?'sa':''} ${!c&&off?'su':''}" title="${esc([...k.map(a=>a[0]),e&&e.text].filter(Boolean).join(' / '))}">${d}${WD[w]} ${esc(k.map(a=>a[1]).join(''))}</td>`});h+='</tr>'}
+h+=`<td class="${c} ${s===n?'td':''} ${!c&&w===6?'sa':''} ${!c&&off?'su':''}" title="${esc([...k.map(a=>a[0]),e&&e.text].filter(Boolean).join(' / '))}">${d}${WD[w]} ${esc(k.map(a=>a[1]).join(' '))}</td>`});h+='</tr>'}
 return h+'</table></div><p class="sub">赤い日は日曜・休日表示の日。月のボタンを押すと、行事を見ながら振替日を決められます。</p>'}
 function calM(mo,m,E,n){const yy=mo>=4?Y:Y+1,len=new Date(yy,mo,0).getDate(),pd=pend();if(!pd.find(r=>r.id===pk))pk=pd[0]&&pd[0].id;
 let h='<div class="card" style="margin-bottom:8px">振替日を決める振替休日：'+(pd.length?`<select id="pk">${pd.map(r=>`<option value="${r.id}"${r.id===pk?' selected':''}>${esc(fm(r.work))} ${esc(r.what||'')}${r.method==='半日×2'?'（半日）':''}</option>`).join('')}</select> <span class="sub">日付の行の「ここを振替日に」を押すと入ります</span>`:'<span class="sub">振替日が未定のものはありません</span>')+'</div><div class="wrap"><table><tr><th>日付</th><th>勤怠</th><th>区分</th><th>行事・内容</th><th></th></tr>';
