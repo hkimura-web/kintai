@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>勤怠管理</title><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 16 16%27%3E%3Ctext y=%2713%27 font-size=%2713%27%3E🗓️%3C/text%3E%3C/svg%3E">
+<style>
+:root{--bg:#f6f7f9;--fg:#1f2933;--card:#fff;--line:#d8dde3;--mut:#6b7785;--acc:#2f5d8a;--red:#c0392b;--grn:#2e7d32;
+--c1:#9b30ff;--c2:#e4d4ff;--c3:#ffec3d;--c4:#ffd980;--c5:#fff2cc;--c6:#fcd9c4;--sat:#2b6cb0;--sun:#c0392b;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15191e;--fg:#e6eaee;--card:#1e242b;--line:#36404a;--mut:#98a4b0;--acc:#7fb2e5;--c2:#4a3a6e;--c5:#5a4f2a;--c4:#7a5f1e;--c6:#6b4430}}
+:root[data-theme="dark"]{--bg:#15191e;--fg:#e6eaee;--card:#1e242b;--line:#36404a;--mut:#98a4b0;--acc:#7fb2e5;--c2:#4a3a6e;--c5:#5a4f2a;--c4:#7a5f1e;--c6:#6b4430}
+html{height:100%}body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.5 "Yu Gothic","Hiragino Sans",Meiryo,sans-serif}
+header{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:10px 14px;background:var(--card);border-bottom:1px solid var(--line)}
+h1{font-size:17px;margin:0 auto 0 0}
+select,input,button{font:inherit;color:var(--fg);background:var(--card);border:1px solid var(--line);border-radius:6px;padding:4px 8px}
+button{cursor:pointer}button.p{background:var(--acc);color:#fff;border-color:var(--acc)}
+nav{display:flex;gap:4px;padding:8px 14px 0;flex-wrap:wrap}nav button{border-radius:6px 6px 0 0}nav button.on{background:var(--acc);color:#fff}
+main{padding:12px 14px;max-width:1200px}
+.msg{background:#fdecea;color:#7a1f16;padding:6px 14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+.card h3{margin:0 0 4px;font-size:13px;color:var(--mut);font-weight:600}.big{font-size:26px;font-weight:700}.sub{color:var(--mut);font-size:12px}
+.bad{color:var(--red);font-weight:700}.ok{color:var(--grn);font-weight:700}
+.todo{display:flex;justify-content:space-between;padding:2px 0}
+.wrap{overflow-x:auto}table{border-collapse:collapse;width:100%;background:var(--card)}
+th,td{border:1px solid var(--line);padding:3px 7px;text-align:left;white-space:nowrap}th{background:var(--bg);font-size:12px}
+form{display:flex;flex-wrap:wrap;gap:8px;align-items:end;margin:10px 0;padding:10px;background:var(--card);border:1px solid var(--line);border-radius:8px}
+label{display:flex;flex-direction:column;font-size:12px;color:var(--mut)}
+.cal td{padding:1px 3px;font-size:11px;min-width:58px;text-align:left}.cal th{text-align:center}
+.c1{background:var(--c1);color:#fff}.c2{background:var(--c2)}.c3{background:var(--c3);color:#222}.c4{background:var(--c4)}.c5{background:var(--c5)}.c6{background:var(--c6)}
+.sa{color:var(--sat)}.su{color:var(--sun)}.td{outline:2px solid var(--acc);outline-offset:-2px}.na{background:var(--bg)}
+.st{display:inline-block;padding:0 6px;border-radius:8px;background:var(--c5)}.st.s2{background:#ffccff;color:#222}.st.s3{background:#ccc;color:#222}.st.s4{background:#ffc7ce;color:#9c0006}
+</style></head><body>
+<header><h1>勤怠管理</h1><label>年度<select id="yr"></select></label><button id="bk">バックアップ書き出し</button></header>
+<div id="warn"></div><nav id="nav"></nav><main id="main"></main>
+<script>
+const DEF=()=>({set:{base:20,carry:{},cap:20,hpd:8,halfMax:20,hourMax:40,duty:5},yk:[],ot:[],tu:[],fh:[]});
+let S=DEF(),ref=null,dl=null,tab='dash',Y=2026,ed=null,tm;
+const WD='日月火水木金土',pad=n=>String(n).padStart(2,'0'),esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const P=s=>s.split('-').map(Number),wd=s=>{const[a,b,c]=P(s);return WD[new Date(a,b-1,c).getDay()]};
+const fy=s=>{const[y,m]=P(s);return y-(m<4?1:0)},fm=s=>s?`${s.slice(0,4)}/${+s.slice(5,7)}/${+s.slice(8)}(${wd(s)})`:'';
+const now=()=>{const d=new Date();return`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`};
+const uid=()=>Math.random().toString(36).slice(2,9),R=n=>+(+n).toFixed(2),$=s=>document.querySelector(s);
+const days=r=>r.kind==='全休'?1:r.kind==='半休'?.5:(+r.hours||0)/S.set.hpd;
+const ykY=y=>S.yk.filter(r=>fy(r.date)===y),taken=y=>ykY(y).reduce((a,r)=>a+days(r),0);
+const carry=y=>S.set.carry[y]!=null?S.set.carry[y]:(y<=2026?0:Math.min(S.set.cap,remain(y-1)));
+const remain=y=>S.set.base+carry(y)-taken(y);
+const fhSt=r=>{if(!r.d1||(r.method==='半日×2'&&!r.d2))return'振替日未定';const l=[r.d1,r.d2].filter(Boolean).sort().pop(),ok=r.status==='申請済';return l<now()?(ok?'取得済':'要確認'):(ok?'申請済':'未申請')};
+const fhY=y=>S.fh.filter(r=>r.work&&fy(r.work)===y);
+function otRem(){const o={};[...new Set(S.ot.map(r=>fy(r.date)))].forEach(y=>{let u=S.tu.filter(r=>fy(r.date)===y).reduce((a,r)=>a+(+r.hours||0),0);S.ot.filter(r=>fy(r.date)===y).sort((a,b)=>a.date<b.date?-1:1).forEach(r=>{const x=Math.min(u,+r.hours||0);u-=x;o[r.id]=(+r.hours||0)-x})});return o}
+function marks(){const m={},a=(d,t,s,c)=>{if(d)(m[d]=m[d]||[]).push([t,s,c])};
+S.yk.forEach(r=>a(r.date,r.kind==='全休'?'有給':r.kind==='半休'?'半休':'時間休',r.kind==='全休'?'有':r.kind==='半休'?'半':'時',r.kind==='全休'?'c1':'c2'));
+S.tu.forEach(r=>a(r.date,'振替'+r.hours+'h','振'+r.hours+'h','c5'));
+S.fh.forEach(r=>{a(r.work,'休日出勤','出','c6');const h=r.method==='半日×2';[r.d1,r.d2].forEach(d=>a(d,r.kind==='振替休業'?'振替休業':h?'振替半日':'振替休日',h?'半振':'振',h?'c4':'c3'))});return m}
+let sha=null,canWrite=false,busy=false,dirty=false;
+const CFG=()=>{try{return JSON.parse(localStorage.getItem('kcfg')||'{}')}catch{return{}}};
+const U8=s=>{const b=new TextEncoder().encode(s);let t='';for(let i=0;i<b.length;i+=8192)t+=String.fromCharCode(...b.subarray(i,i+8192));return btoa(t)};
+const D8=b=>new TextDecoder().decode(Uint8Array.from(atob(b.replace(/\s/g,'')),c=>c.charCodeAt(0)));
+const gh=(c,x={})=>({url:`https://api.github.com/repos/${c.owner}/${c.repo}/contents/${c.path||'data.json'}`,h:{Accept:'application/vnd.github+json',...(c.token?{Authorization:'Bearer '+c.token}:{}),...x}});
+async function boot(){const c=CFG();canWrite=!!(c.owner&&c.repo&&c.token);sha=null;
+try{if(c.owner&&c.repo){const g=gh(c),r=await fetch(g.url+'?ref='+(c.branch||'main'),{headers:g.h,cache:'no-store'});if(!r.ok)throw r.status;const j=await r.json();sha=j.sha;S={...DEF(),...JSON.parse(D8(j.content))};warn(canWrite?'':'読み取り専用です（トークン未設定）')}
+else{const r=await fetch('data.json',{cache:'no-store'});if(!r.ok)throw r.status;S={...DEF(),...await r.json()};warn('読み取り専用です。保存するには「接続」タブで設定してください')}}
+catch(e){warn('データを読み込めませんでした（'+e+'）。「接続」タブの設定を確認してください')}}
+async function put(){if(busy){dirty=true;return}busy=true;const c=CFG(),g=gh(c,{'Content-Type':'application/json'});
+try{do{dirty=false;const r=await fetch(g.url,{method:'PUT',headers:g.h,body:JSON.stringify({message:'update '+now(),content:U8(JSON.stringify(S,null,1)),branch:c.branch||'main',...(sha?{sha}:{})})});
+if(!r.ok){warn(r.status===409||r.status===422?'他の端末で更新されていました。ページを再読み込みしてからやり直してください':'保存に失敗しました（'+r.status+'）');break}
+sha=(await r.json()).content.sha;warn('')}while(dirty)}catch(e){warn('保存に失敗しました')}busy=false}
+function save(){if(!canWrite){warn('トークン未設定のため保存されません。「接続」タブで設定してください');return}clearTimeout(tm);tm=setTimeout(put,400)}
+function cfgView(){const c=CFG(),f=(i,l,v,t='text')=>`<label>${l}<input id="c-${i}" type="${t}" value="${esc(v||'')}" style="width:220px"></label>`;
+return`<h2 style="font-size:15px">GitHubとの接続（この端末だけに保存されます）</h2><div class="card" style="display:flex;flex-wrap:wrap;gap:8px;align-items:end">${f('owner','ユーザー名',c.owner)}${f('repo','リポジトリ名',c.repo)}${f('branch','ブランチ',c.branch||'main')}${f('path','データファイル',c.path||'data.json')}${f('token','トークン（保存に必要）',c.token,'password')}<button class="p" data-s="1">保存して読み込む</button><button data-x="1">この端末の接続情報を削除</button></div><p class="sub">トークンはこの端末のブラウザにだけ保存され、GitHubとの通信以外には使われません。共用のPCでは、使い終わったら「接続情報を削除」を押してください。</p>`}
+function setCfg(){const v=i=>$('#c-'+i).value.trim();localStorage.setItem('kcfg',JSON.stringify({owner:v('owner'),repo:v('repo'),branch:v('branch')||'main',path:v('path')||'data.json',token:v('token')}));boot().then(()=>{tab='dash';render()})}
+function exp(){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(S,null,1)],{type:'application/json'}));a.download=`kintai-backup-${now()}.json`;a.click()}
+const warn=t=>$('#warn').innerHTML=t?`<div class="msg">${t}</div>`:'';
+const SPEC={
+yk:{n:'有給',h:['日付','種類','時間数','申請状況','備考'],f:[['date','日付','date'],['kind','種類',['全休','半休','時間休']],['hours','時間数（時間休のみ）','number'],['status','申請状況',['未申請','申請済']],['note','備考','text']],row:r=>[fm(r.date),r.kind,r.kind==='時間休'?r.hours+'h':'',r.status,r.note],req:'date',dt:'date',list:()=>ykY(Y)},
+ot:{n:'超過勤務',h:['勤務日','超過(h)','要件','申請状況','備考','未完済(h)'],f:[['date','勤務日','date'],['hours','超過時間（h）','number'],['what','要件','text'],['status','申請状況',['未申請','申請済']],['note','備考','text']],row:(r,x)=>[fm(r.date),r.hours,r.what,r.status,r.note,x[r.id]>0?`<b class="bad">${R(x[r.id])}</b>`:'0'],req:'date',dt:'date',list:()=>S.ot.filter(r=>fy(r.date)===Y)},
+tu:{n:'振替時間休',h:['使用日','使用(h)','備考'],f:[['date','使用日','date'],['hours','使用時間（h）','number'],['note','備考','text']],row:r=>[fm(r.date),r.hours,r.note],req:'date',dt:'date',list:()=>S.tu.filter(r=>fy(r.date)===Y)},
+fh:{n:'振替休日',h:['種類','勤務日','要件','振替方法','振替日','振替日2','仮申請日','申請状況','状況','備考'],f:[['kind','種類',['振替休日','振替休業']],['work','勤務日','date'],['what','要件','text'],['method','振替方法',['1日','半日×2']],['d1','振替日（半日は1日目）','date'],['d2','振替日2（半日の2日目）','date'],['tmp','仮申請日','date'],['status','申請状況',['未申請','申請済']],['note','備考','text']],row:r=>{const s=fhSt(r),c={'申請済':'s2','取得済':'s3','振替日未定':'s4','要確認':'s4'}[s]||'';return[r.kind,fm(r.work),r.what,r.method,fm(r.d1),fm(r.d2),fm(r.tmp),r.status,`<span class="st ${c}">${s}</span>`,r.note]},req:'work',dt:'work',list:()=>fhY(Y)}};
+function listView(k){const sp=SPEC[k],x=k==='ot'?otRem():{},rec=ed&&ed.k===k?(S[k].find(r=>r.id===ed.id)||{}):{};
+const fld=sp.f.map(([n,l,t])=>{const v=rec[n]??(n==='status'?'未申請':n==='method'?'1日':'');return`<label>${l}`+(Array.isArray(t)?`<select name="${n}">${t.map(o=>`<option${o===v?' selected':''}>${o}</option>`).join('')}</select>`:`<input name="${n}" type="${t}"${t==='number'?' step="0.5" style="width:90px"':''} value="${esc(v)}">`)+'</label>'}).join('');
+const rows=sp.list().sort((a,b)=>a[sp.dt]<b[sp.dt]?-1:1).map(r=>`<tr>${sp.row(r,x).map(c=>`<td>${k==='ot'&&String(c).startsWith('<b')?c:(String(c).startsWith('<span')?c:esc(c))}</td>`).join('')}<td><button data-e="${k}:${r.id}">編集</button> <button data-d="${k}:${r.id}">削除</button></td></tr>`).join('');
+return`<h2 style="font-size:15px">${sp.n}（${Y}年度）</h2><form data-k="${k}">${fld}<button class="p">${rec.id?'更新':'追加'}</button>${rec.id?'<button type="button" data-c="1">取消</button>':''}</form><div class="wrap"><table><tr>${sp.h.map(h=>`<th>${h}</th>`).join('')}<th></th></tr>${rows||`<tr><td colspan="12" class="sub">まだ記録がありません</td></tr>`}</table></div>`}
+function dash(){const y=Y,b=S.set,t=taken(y),rm=remain(y),duty=ykY(y).filter(r=>r.kind!=='時間休').reduce((a,r)=>a+days(r),0),
+hf=ykY(y).filter(r=>r.kind==='半休').length,hh=ykY(y).filter(r=>r.kind==='時間休').reduce((a,r)=>a+(+r.hours||0),0),
+oe=S.ot.filter(r=>fy(r.date)===y).reduce((a,r)=>a+(+r.hours||0),0),ou=S.tu.filter(r=>fy(r.date)===y).reduce((a,r)=>a+(+r.hours||0),0),
+f=fhY(y),cnt=s=>f.filter(r=>fhSt(r)===s).length,td=[['有給の未申請',ykY(y).filter(r=>r.status!=='申請済').length],['超過勤務の未申請',S.ot.filter(r=>fy(r.date)===y&&r.status!=='申請済').length],['振替休日の未申請',cnt('未申請')],['振替日が未定',cnt('振替日未定')],['要確認の振替休日',cnt('要確認')]],
+n=now(),nx=a=>a.filter(d=>d>=n).sort()[0],nk=nx(S.yk.map(r=>r.date)),nf=nx(S.fh.filter(r=>r.kind==='振替休日').flatMap(r=>[r.d1,r.d2]).filter(Boolean));
+return`<div class="grid">
+<div class="card"><h3>残有給</h3><div class="big">${R(rm)}日</div><div class="sub">総枠 ${R(b.base+carry(y))}日（付与${b.base}＋繰越${R(carry(y))}）／取得 ${R(t)}日</div></div>
+<div class="card"><h3>取るべき有給（繰越上限${b.cap}日超過分）</h3><div class="big ${rm>b.cap?'bad':''}">${R(Math.max(0,rm-b.cap))}日</div></div>
+<div class="card"><h3>5日義務（全休＋半休）</h3><div class="big ${duty>=b.duty?'ok':''}">${R(duty)}日</div><div class="sub">${duty>=b.duty?'達成':'あと'+R(b.duty-duty)+'日'}（時間休は含めない）</div></div>
+<div class="card"><h3>半休・時間休</h3><div>半休 ${hf} / ${b.halfMax}回</div><div>時間休 ${R(hh)} / ${b.hourMax}時間</div></div>
+<div class="card"><h3>超過勤務（時間振替）</h3><div class="big ${oe-ou>0?'bad':''}">残 ${R(oe-ou)}h</div><div class="sub">超過 ${R(oe)}h／使用 ${R(ou)}h</div></div>
+<div class="card"><h3>振替休日（${f.length}件）</h3><div>申請済 ${cnt('申請済')}／取得済 ${cnt('取得済')}／未申請 ${cnt('未申請')}</div></div>
+<div class="card"><h3>やること</h3>${td.map(([l,c])=>`<div class="todo"><span>${l}</span><span class="${c?'bad':'ok'}">${c}件</span></div>`).join('')}</div>
+<div class="card"><h3>次の予定</h3><div>有給：${nk?fm(nk):'なし'}</div><div>振替休日：${nf?fm(nf):'なし'}</div></div></div>`}
+function cal(){const m=marks(),n=now(),ms=[4,5,6,7,8,9,10,11,12,1,2,3];let h='<div class="wrap"><table class="cal"><tr>'+ms.map(x=>`<th>${x}月</th>`).join('')+'</tr>';
+for(let d=1;d<=31;d++){h+='<tr>';ms.forEach(mo=>{const yy=mo>=4?Y:Y+1,dt=new Date(yy,mo-1,d);if(dt.getMonth()!==mo-1){h+='<td class="na"></td>';return}
+const s=`${yy}-${pad(mo)}-${pad(d)}`,k=m[s]||[],w=dt.getDay(),c=['c1','c3','c4','c2','c5','c6'].find(x=>k.some(a=>a[2]===x))||'';
+h+=`<td class="${c} ${s===n?'td':''} ${!c&&w===6?'sa':''} ${!c&&w===0?'su':''}" title="${esc(k.map(a=>a[0]).join(' '))}">${d}${WD[w]} ${esc(k.map(a=>a[1]).join(''))}</td>`});h+='</tr>'}
+return h+'</table></div><p class="sub">有＝有給／半＝半休／時＝時間休／振＝振替休日／半振＝振替半日／出＝休日出勤。セルにカーソルを置くと詳細が出ます。</p>'}
+function render(){$('#yr').innerHTML=[...new Set([2026,2027,2028,2029,2030,Y])].sort().map(y=>`<option${y===Y?' selected':''}>${y}</option>`).join('');
+$('#nav').innerHTML=[['dash','ダッシュボード'],['cal','カレンダー'],['yk','有給'],['ot','超過勤務'],['tu','振替時間休'],['fh','振替休日'],['cfg','接続']].map(([k,l])=>`<button data-t="${k}" class="${k===tab?'on':''}">${l}</button>`).join('');
+$('#main').innerHTML=tab==='dash'?dash():tab==='cal'?cal():tab==='cfg'?cfgView():listView(tab)}
+document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
+if(b.dataset.t){tab=b.dataset.t;ed=null}else if(b.dataset.e){const[k,id]=b.dataset.e.split(':');ed={k,id}}else if(b.dataset.c){ed=null}
+else if(b.dataset.d){const[k,id]=b.dataset.d.split(':');if(!confirm('この記録を削除しますか？'))return;S[k]=S[k].filter(r=>r.id!==id);save()}
+else if(b.id==='bk'){exp();return}else if(b.dataset.s){setCfg();return}else if(b.dataset.x){localStorage.removeItem('kcfg');canWrite=false;warn('この端末の接続情報を削除しました');tab='cfg'}else return;render()});
+document.addEventListener('submit',e=>{e.preventDefault();const k=e.target.dataset.k,sp=SPEC[k],r={};new FormData(e.target).forEach((v,n)=>r[n]=v);
+if(!r[sp.req]){alert('日付を入力してください');return}if(k==='fh'&&r.method!=='半日×2')r.d2='';
+if(ed&&ed.k===k){const i=S[k].findIndex(x=>x.id===ed.id);S[k][i]={...S[k][i],...r}}else S[k].push({id:uid(),...r});
+ed=null;save();render()});
+$('#yr').onchange=e=>{Y=+e.target.value;ed=null;render()};
+(async()=>{Y=Math.max(2026,fy(now()));await boot();render()})();
+</script></body></html>
