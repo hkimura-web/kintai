@@ -29,7 +29,7 @@ label{display:flex;flex-direction:column;font-size:12px;color:var(--mut)}
 .c1{background:var(--c1);color:#fff}.c2{background:var(--c2)}.c3{background:var(--c3);color:#222}.c4{background:var(--c4)}.c5{background:var(--c5)}.c6{background:var(--c6)}
 .sa{color:var(--sat)}.su{color:var(--sun)}.td{outline:2px solid var(--acc);outline-offset:-2px}.na{background:var(--bg)}
 .st{display:inline-block;padding:0 6px;border-radius:8px;background:var(--c5)}.st.s2{background:#ffccff;color:#222}.st.s3{background:#ccc;color:#222}.st.s4{background:#ffc7ce;color:#9c0006}
-.k1{background:#ffccff;color:#222}.k2{background:#79fd79;color:#222}.k3{background:#ffb039;color:#222}.k4{background:#b7b7b7;color:#222}.k5{background:#f071f0;color:#222}.k6{background:#b4ffff;color:#222}.k7{background:#a64d79;color:#fff}.hl{color:var(--red);font-weight:700}tr.td{outline:2px solid var(--acc);outline-offset:-2px}header label{font-weight:700;color:var(--fg)}#yr{font-weight:700}
+.k1{background:#ffccff;color:#222}.k2{background:#79fd79;color:#222}.k3{background:#ffb039;color:#222}.k4{background:#b7b7b7;color:#222}.k5{background:#f071f0;color:#222}.k6{background:#b4ffff;color:#222}.k7{background:#a64d79;color:#fff}.hl{color:var(--red);font-weight:700}tr.td{outline:2px solid var(--acc);outline-offset:-2px}.st.s5{background:#c6ef7a;color:#222}header label{font-weight:700;color:var(--fg)}#yr{font-weight:700}
 </style></head><body>
 <header><h1>勤怠管理</h1><label>年度<select id="yr"></select></label><button id="bk">バックアップ書き出し</button></header>
 <div id="warn"></div><nav id="nav"></nav><main id="main"></main>
@@ -45,7 +45,7 @@ const days=r=>r.kind==='全休'?1:r.kind==='半休'?.5:(+r.hours||0)/S.set.hpd;
 const ykY=y=>S.yk.filter(r=>fy(r.date)===y),taken=y=>ykY(y).reduce((a,r)=>a+days(r),0);
 const carry=y=>S.set.carry[y]!=null?S.set.carry[y]:(y<=2026?0:Math.min(S.set.cap,remain(y-1)));
 const remain=y=>S.set.base+carry(y)-taken(y);
-const fhSt=r=>{if(!r.d1||(r.method==='半日×2'&&!r.d2))return'振替日未定';const l=[r.d1,r.d2].filter(Boolean).sort().pop(),ok=r.status==='申請済';return l<now()?(ok?'取得済':'要確認'):(ok?'申請済':'未申請')};
+const fhSt=r=>{if(!r.d1||(r.method==='半日×2'&&!r.d2))return'振替日未定';const l=[r.d1,r.d2].filter(Boolean).sort().pop(),ok=r.status==='申請済';return l<now()?(ok?'取得済':'要確認'):(ok?'取得前':'未申請')};
 const fhY=y=>S.fh.filter(r=>r.work&&fy(r.work)===y);
 function otRem(){const o={};[...new Set(S.ot.map(r=>fy(r.date)))].forEach(y=>{let u=S.tu.filter(r=>fy(r.date)===y).reduce((a,r)=>a+(+r.hours||0),0);S.ot.filter(r=>fy(r.date)===y).sort((a,b)=>a.date<b.date?-1:1).forEach(r=>{const x=Math.min(u,+r.hours||0);u-=x;o[r.id]=(+r.hours||0)-x})});return o}
 function marks(){const m={},a=(d,t,s,c)=>{if(d)(m[d]=m[d]||[]).push([t,s,c])};
@@ -76,7 +76,7 @@ const SPEC={
 yk:{n:'有給',h:['日付','種類','時間数','申請状況','備考'],f:[['date','日付','date'],['kind','種類',['全休','半休','時間休']],['hours','時間数（時間休のみ）','number'],['status','申請状況',['未申請','申請済']],['note','備考','text']],row:r=>[fm(r.date),r.kind,r.kind==='時間休'?r.hours+'h':'',chip(r.status),r.note],req:'date',dt:'date',list:()=>ykY(Y)},
 ot:{n:'超過勤務',h:['勤務日','超過(h)','要件','申請状況','備考','未完済(h)'],f:[['date','勤務日','date'],['hours','超過時間（h）','number'],['what','要件','text'],['status','申請状況',['未申請','申請済']],['note','備考','text']],row:(r,x)=>[fm(r.date),r.hours,r.what,chip(r.status),r.note,x[r.id]>0?`<b class="bad">${R(x[r.id])}</b>`:'0'],req:'date',dt:'date',list:()=>S.ot.filter(r=>fy(r.date)===Y)},
 tu:{n:'振替時間休',h:['使用日','使用(h)','充当元（古い超過分から自動）','備考'],f:[['date','使用日','date'],['hours','使用時間（h）','number'],['note','備考','text']],row:(r,x)=>[fm(r.date),r.hours,(x[r.id]||[]).join(' ＋ '),r.note],req:'date',dt:'date',list:()=>S.tu.filter(r=>fy(r.date)===Y)},
-fh:{n:'振替休日',h:['種類','勤務日','要件','振替方法','振替日','振替日2','仮申請日','申請状況','状況','備考'],f:[['kind','種類',['振替休日','振替休業']],['work','勤務日','date'],['what','要件','text'],['method','振替方法',['1日','半日×2']],['d1','振替日（半日は1日目）','date'],['d2','振替日2（半日の2日目）','date'],['tmp','仮申請日','date'],['status','申請状況',['未申請','申請済']],['note','備考','text']],row:r=>{const s=fhSt(r),c={'申請済':'s2','取得済':'s3','振替日未定':'s4','要確認':'s4'}[s]||'';return[r.kind,fm(r.work),r.what,r.method,fm(r.d1),fm(r.d2),fm(r.tmp),chip(r.status),`<span class="st ${c}">${s}</span>`,r.note]},req:'work',dt:'work',list:()=>fhY(Y)},
+fh:{n:'振替休日',h:['種類','勤務日','要件','振替方法','振替日','振替日2','仮申請日','申請状況','状況','備考'],f:[['kind','種類',['振替休日','振替休業']],['work','勤務日','date'],['what','要件','text'],['method','振替方法',['1日','半日×2']],['d1','振替日（半日は1日目）','date'],['d2','振替日2（半日の2日目）','date'],['tmp','仮申請日','date'],['status','申請状況',['未申請','申請済']],['note','備考','text']],row:r=>{const s=fhSt(r),c={'取得前':'s5','取得済':'s3','振替日未定':'s4','要確認':'s4'}[s]||'';return[r.kind,fm(r.work),r.what,r.method,fm(r.d1),fm(r.d2),fm(r.tmp),chip(r.status),`<span class="st ${c}">${s}</span>`,r.note]},req:'work',dt:'work',list:()=>fhY(Y)},
 ev:{n:'行事予定',h:['日付','行事・内容','部活区分','休日'],f:[['date','日付','date'],['text','行事・内容','text'],['cat','部活区分',['',...CK]],['hol','休日表示（祝日・休校など）',['','○']]],row:r=>[fm(r.date),r.text,r.cat,r.hol],req:'date',dt:'date',list:()=>(S.ev||[]).filter(r=>fy(r.date)===Y)}};
 const TC={dash:'#cfe3f7',cal:'#d3f0d6',yk:'#e6dcf7',ot:'#fde2c8',tu:'#fff1b8',fh:'#ffd6e0',ev:'#d4efe8',cfg:'#e3e6ea'};
 const chip=s=>`<span class="st ${s==='申請済'?'s2':''}">${esc(s)}</span>`;
@@ -97,7 +97,7 @@ return`<div class="grid">
 <div class="card"><h3>5日義務（全休＋半休）</h3><div class="big ${duty>=b.duty?'ok':''}">${R(duty)}日</div><div class="sub">${duty>=b.duty?'達成':'あと'+R(b.duty-duty)+'日'}（時間休は含めない）</div></div>
 <div class="card"><h3>半休・時間休</h3><div>半休 ${hf} / ${b.halfMax}回</div><div>時間休 ${R(hh)} / ${b.hourMax}時間</div></div>
 <div class="card"><h3>超過勤務（時間振替）</h3><div class="big ${oe-ou>0?'bad':''}">残 ${R(oe-ou)}h</div><div class="sub">超過 ${R(oe)}h／使用 ${R(ou)}h</div></div>
-<div class="card"><h3>振替休日（${f.length}件）</h3><div>申請済 ${cnt('申請済')}／取得済 ${cnt('取得済')}／未申請 ${cnt('未申請')}</div></div>
+<div class="card"><h3>振替休日（${f.length}件）</h3><div>取得前 ${cnt('取得前')}／取得済 ${cnt('取得済')}／未申請 ${cnt('未申請')}</div></div>
 <div class="card"><h3>やること</h3>${td.map(([l,c])=>`<div class="todo"><span>${l}</span><span class="${c?'bad':'ok'}">${c}件</span></div>`).join('')}</div>
 <div class="card"><h3>次の予定</h3><div>有給：${nk?fm(nk):'なし'}</div><div>振替休日：${nf?fm(nf):'なし'}</div></div></div>`}
 const evm=()=>{const m={};(S.ev||[]).forEach(e=>m[e.date]=e);return m},pend=()=>S.fh.filter(r=>!r.d1||(r.method==='半日×2'&&!r.d2)),MS=[4,5,6,7,8,9,10,11,12,1,2,3],PRI=['c1','c3','c4','c2','c5','c6'];
