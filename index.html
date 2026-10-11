@@ -29,6 +29,7 @@ label{display:flex;flex-direction:column;font-size:12px;color:var(--mut)}
 .c1{background:var(--c1);color:#fff}.c2{background:var(--c2)}.c3{background:var(--c3);color:#222}.c4{background:var(--c4)}.c5{background:var(--c5)}.c6{background:var(--c6)}
 .sa{color:var(--sat)}.su{color:var(--sun)}.td{outline:2px solid var(--acc);outline-offset:-2px}.na{background:var(--bg)}
 .st{display:inline-block;padding:0 6px;border-radius:8px;background:var(--c5)}.st.s2{background:#ffccff;color:#222}.st.s3{background:#ccc;color:#222}.st.s4{background:#ffc7ce;color:#9c0006}
+.k1{background:#ffccff;color:#222}.k2{background:#79fd79;color:#222}.k3{background:#ffb039;color:#222}.k4{background:#b7b7b7;color:#222}.k5{background:#f071f0;color:#222}.k6{background:#b4ffff;color:#222}.k7{background:#a64d79;color:#fff}.hl{color:var(--red);font-weight:700}tr.td{outline:2px solid var(--acc);outline-offset:-2px}
 </style></head><body>
 <header><h1>勤怠管理</h1><label>年度<select id="yr"></select></label><button id="bk">バックアップ書き出し</button></header>
 <div id="warn"></div><nav id="nav"></nav><main id="main"></main>
@@ -67,14 +68,16 @@ sha=(await r.json()).content.sha;warn('')}while(dirty)}catch(e){warn('保存に�
 function save(){if(!canWrite){warn('トークン未設定のため保存されません。「接続」タブで設定してください');return}clearTimeout(tm);tm=setTimeout(put,400)}
 function cfgView(){const c=CFG(),f=(i,l,v,t='text')=>`<label>${l}<input id="c-${i}" type="${t}" value="${esc(v||'')}" style="width:220px"></label>`;
 return`<h2 style="font-size:15px">GitHubとの接続（この端末だけに保存されます）</h2><div class="card" style="display:flex;flex-wrap:wrap;gap:8px;align-items:end">${f('owner','ユーザー名',c.owner)}${f('repo','リポジトリ名',c.repo)}${f('branch','ブランチ',c.branch||'main')}${f('path','データファイル',c.path||'data.json')}${f('token','トークン（保存に必要）',c.token,'password')}<button class="p" data-s="1">保存して読み込む</button><button data-x="1">この端末の接続情報を削除</button></div><p class="sub">トークンはこの端末のブラウザにだけ保存され、GitHubとの通信以外には使われません。共用のPCでは、使い終わったら「接続情報を削除」を押してください。</p>`}
-function setCfg(){const v=i=>$('#c-'+i).value.trim();localStorage.setItem('kcfg',JSON.stringify({owner:v('owner'),repo:v('repo'),branch:v('branch')||'main',path:v('path')||'data.json',token:v('token')}));boot().then(()=>{tab='dash';render()})}
+function setCfg(){const v=i=>$('#c-'+i).value.trim();localStorage.setItem('kcfg',JSON.stringify({owner:v('owner'),repo:v('repo'),branch:v('branch')||'main',path:v('path')||'data.json',token:v('token')}));boot().then(loadEv).then(()=>{tab='dash';render()})}
 function exp(){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(S,null,1)],{type:'application/json'}));a.download=`kintai-backup-${now()}.json`;a.click()}
 const warn=t=>$('#warn').innerHTML=t?`<div class="msg">${t}</div>`:'';
+let cm=null,pk=null;const CK=['高校大会','中学大会','中高大会','練習なし','釜利谷練習','学校練習','合宿'];
 const SPEC={
 yk:{n:'有給',h:['日付','種類','時間数','申請状況','備考'],f:[['date','日付','date'],['kind','種類',['全休','半休','時間休']],['hours','時間数（時間休のみ）','number'],['status','申請状況',['未申請','申請済']],['note','備考','text']],row:r=>[fm(r.date),r.kind,r.kind==='時間休'?r.hours+'h':'',r.status,r.note],req:'date',dt:'date',list:()=>ykY(Y)},
 ot:{n:'超過勤務',h:['勤務日','超過(h)','要件','申請状況','備考','未完済(h)'],f:[['date','勤務日','date'],['hours','超過時間（h）','number'],['what','要件','text'],['status','申請状況',['未申請','申請済']],['note','備考','text']],row:(r,x)=>[fm(r.date),r.hours,r.what,r.status,r.note,x[r.id]>0?`<b class="bad">${R(x[r.id])}</b>`:'0'],req:'date',dt:'date',list:()=>S.ot.filter(r=>fy(r.date)===Y)},
 tu:{n:'振替時間休',h:['使用日','使用(h)','備考'],f:[['date','使用日','date'],['hours','使用時間（h）','number'],['note','備考','text']],row:r=>[fm(r.date),r.hours,r.note],req:'date',dt:'date',list:()=>S.tu.filter(r=>fy(r.date)===Y)},
-fh:{n:'振替休日',h:['種類','勤務日','要件','振替方法','振替日','振替日2','仮申請日','申請状況','状況','備考'],f:[['kind','種類',['振替休日','振替休業']],['work','勤務日','date'],['what','要件','text'],['method','振替方法',['1日','半日×2']],['d1','振替日（半日は1日目）','date'],['d2','振替日2（半日の2日目）','date'],['tmp','仮申請日','date'],['status','申請状況',['未申請','申請済']],['note','備考','text']],row:r=>{const s=fhSt(r),c={'申請済':'s2','取得済':'s3','振替日未定':'s4','要確認':'s4'}[s]||'';return[r.kind,fm(r.work),r.what,r.method,fm(r.d1),fm(r.d2),fm(r.tmp),r.status,`<span class="st ${c}">${s}</span>`,r.note]},req:'work',dt:'work',list:()=>fhY(Y)}};
+fh:{n:'振替休日',h:['種類','勤務日','要件','振替方法','振替日','振替日2','仮申請日','申請状況','状況','備考'],f:[['kind','種類',['振替休日','振替休業']],['work','勤務日','date'],['what','要件','text'],['method','振替方法',['1日','半日×2']],['d1','振替日（半日は1日目）','date'],['d2','振替日2（半日の2日目）','date'],['tmp','仮申請日','date'],['status','申請状況',['未申請','申請済']],['note','備考','text']],row:r=>{const s=fhSt(r),c={'申請済':'s2','取得済':'s3','振替日未定':'s4','要確認':'s4'}[s]||'';return[r.kind,fm(r.work),r.what,r.method,fm(r.d1),fm(r.d2),fm(r.tmp),r.status,`<span class="st ${c}">${s}</span>`,r.note]},req:'work',dt:'work',list:()=>fhY(Y)},
+ev:{n:'行事予定',h:['日付','行事・内容','部活区分','休日'],f:[['date','日付','date'],['text','行事・内容','text'],['cat','部活区分',['',...CK]],['hol','休日表示（祝日・休校など）',['','○']]],row:r=>[fm(r.date),r.text,r.cat,r.hol],req:'date',dt:'date',list:()=>(S.ev||[]).filter(r=>fy(r.date)===Y)}};
 function listView(k){const sp=SPEC[k],x=k==='ot'?otRem():{},rec=ed&&ed.k===k?(S[k].find(r=>r.id===ed.id)||{}):{};
 const fld=sp.f.map(([n,l,t])=>{const v=rec[n]??(n==='status'?'未申請':n==='method'?'1日':'');return`<label>${l}`+(Array.isArray(t)?`<select name="${n}">${t.map(o=>`<option${o===v?' selected':''}>${o}</option>`).join('')}</select>`:`<input name="${n}" type="${t}"${t==='number'?' step="0.5" style="width:90px"':''} value="${esc(v)}">`)+'</label>'}).join('');
 const rows=sp.list().sort((a,b)=>a[sp.dt]<b[sp.dt]?-1:1).map(r=>`<tr>${sp.row(r,x).map(c=>`<td>${k==='ot'&&String(c).startsWith('<b')?c:(String(c).startsWith('<span')?c:esc(c))}</td>`).join('')}<td><button data-e="${k}:${r.id}">編集</button> <button data-d="${k}:${r.id}">削除</button></td></tr>`).join('');
@@ -93,16 +96,27 @@ return`<div class="grid">
 <div class="card"><h3>振替休日（${f.length}件）</h3><div>申請済 ${cnt('申請済')}／取得済 ${cnt('取得済')}／未申請 ${cnt('未申請')}</div></div>
 <div class="card"><h3>やること</h3>${td.map(([l,c])=>`<div class="todo"><span>${l}</span><span class="${c?'bad':'ok'}">${c}件</span></div>`).join('')}</div>
 <div class="card"><h3>次の予定</h3><div>有給：${nk?fm(nk):'なし'}</div><div>振替休日：${nf?fm(nf):'なし'}</div></div></div>`}
-function cal(){const m=marks(),n=now(),ms=[4,5,6,7,8,9,10,11,12,1,2,3];let h='<div class="wrap"><table class="cal"><tr>'+ms.map(x=>`<th>${x}月</th>`).join('')+'</tr>';
-for(let d=1;d<=31;d++){h+='<tr>';ms.forEach(mo=>{const yy=mo>=4?Y:Y+1,dt=new Date(yy,mo-1,d);if(dt.getMonth()!==mo-1){h+='<td class="na"></td>';return}
-const s=`${yy}-${pad(mo)}-${pad(d)}`,k=m[s]||[],w=dt.getDay(),c=['c1','c3','c4','c2','c5','c6'].find(x=>k.some(a=>a[2]===x))||'';
-h+=`<td class="${c} ${s===n?'td':''} ${!c&&w===6?'sa':''} ${!c&&w===0?'su':''}" title="${esc(k.map(a=>a[0]).join(' '))}">${d}${WD[w]} ${esc(k.map(a=>a[1]).join(''))}</td>`});h+='</tr>'}
-return h+'</table></div><p class="sub">有＝有給／半＝半休／時＝時間休／振＝振替休日／半振＝振替半日／出＝休日出勤。セルにカーソルを置くと詳細が出ます。</p>'}
+const evm=()=>{const m={};(S.ev||[]).forEach(e=>m[e.date]=e);return m},pend=()=>S.fh.filter(r=>!r.d1||(r.method==='半日×2'&&!r.d2)),MS=[4,5,6,7,8,9,10,11,12,1,2,3],PRI=['c1','c3','c4','c2','c5','c6'];
+function cal(){const m=marks(),E=evm(),n=now();
+return`<div style="margin-bottom:8px;display:flex;gap:4px;flex-wrap:wrap"><button data-m="0" class="${cm?'':'p'}">年間</button>${MS.map(x=>`<button data-m="${x}" class="${cm===x?'p':''}">${x}月</button>`).join('')}</div>`+(cm?calM(cm,m,E,n):calY(m,E,n))}
+function calY(m,E,n){let h='<div class="wrap"><table class="cal"><tr>'+MS.map(x=>`<th>${x}月</th>`).join('')+'</tr>';
+for(let d=1;d<=31;d++){h+='<tr>';MS.forEach(mo=>{const yy=mo>=4?Y:Y+1,dt=new Date(yy,mo-1,d);if(dt.getMonth()!==mo-1){h+='<td class="na"></td>';return}
+const s=`${yy}-${pad(mo)}-${pad(d)}`,k=m[s]||[],e=E[s],w=dt.getDay(),off=w===0||(e&&e.hol==='○'),c=PRI.find(x=>k.some(a=>a[2]===x))||'';
+h+=`<td class="${c} ${s===n?'td':''} ${!c&&w===6?'sa':''} ${!c&&off?'su':''}" title="${esc([...k.map(a=>a[0]),e&&e.text].filter(Boolean).join(' / '))}">${d}${WD[w]} ${esc(k.map(a=>a[1]).join(''))}</td>`});h+='</tr>'}
+return h+'</table></div><p class="sub">赤い日は日曜・休日表示の日。月のボタンを押すと、行事を見ながら振替日を決められます。</p>'}
+function calM(mo,m,E,n){const yy=mo>=4?Y:Y+1,len=new Date(yy,mo,0).getDate(),pd=pend();if(!pd.find(r=>r.id===pk))pk=pd[0]&&pd[0].id;
+let h='<div class="card" style="margin-bottom:8px">振替日を決める振替休日：'+(pd.length?`<select id="pk">${pd.map(r=>`<option value="${r.id}"${r.id===pk?' selected':''}>${esc(fm(r.work))} ${esc(r.what||'')}${r.method==='半日×2'?'（半日）':''}</option>`).join('')}</select> <span class="sub">日付の行の「ここを振替日に」を押すと入ります</span>`:'<span class="sub">振替日が未定のものはありません</span>')+'</div><div class="wrap"><table><tr><th>日付</th><th>勤怠</th><th>区分</th><th>行事・内容</th><th></th></tr>';
+for(let d=1;d<=len;d++){const s=`${yy}-${pad(mo)}-${pad(d)}`,k=m[s]||[],e=E[s]||{},w=new Date(yy,mo-1,d).getDay(),off=w===0||w===6||e.hol==='○',ci=CK.indexOf(e.cat),c=PRI.find(x=>k.some(a=>a[2]===x))||'';
+h+=`<tr class="${s===n?'td':''}"><td class="${w===6?'sa':off?'su':''}">${mo}/${d}(${WD[w]})${e.hol==='○'?' 休':''}</td><td class="${c}">${esc(k.map(a=>a[0]).join(' '))}</td><td class="${ci>=0?'k'+(ci+1):''}">${esc(e.cat||'')}</td><td class="${/閉鎖|休校|休業/.test(e.text||'')?'hl':''}" style="white-space:normal">${esc(e.text||'')}</td><td>${!off&&pk&&!k.length?`<button data-a="${s}">ここを振替日に</button>`:''}</td></tr>`}
+return h+'</table></div>'}
+function assign(s){const r=S.fh.find(x=>x.id===pk);if(!r||!confirm(`${fm(s)} を振替日にしますか？`))return;if(!r.d1)r.d1=s;else r.d2=s;save();render()}
+async function loadEv(){if(S.ev!==undefined)return;try{const r=await fetch('events.json',{cache:'no-store'});S.ev=r.ok?await r.json():[];if(r.ok&&canWrite&&sha)save()}catch(e){S.ev=[]}}
+document.addEventListener('change',e=>{if(e.target.id==='pk')pk=e.target.value});
 function render(){$('#yr').innerHTML=[...new Set([2026,2027,2028,2029,2030,Y])].sort().map(y=>`<option${y===Y?' selected':''}>${y}</option>`).join('');
-$('#nav').innerHTML=[['dash','ダッシュボード'],['cal','カレンダー'],['yk','有給'],['ot','超過勤務'],['tu','振替時間休'],['fh','振替休日'],['cfg','接続']].map(([k,l])=>`<button data-t="${k}" class="${k===tab?'on':''}">${l}</button>`).join('');
+$('#nav').innerHTML=[['dash','ダッシュボード'],['cal','カレンダー'],['yk','有給'],['ot','超過勤務'],['tu','振替時間休'],['fh','振替休日'],['ev','行事予定'],['cfg','接続']].map(([k,l])=>`<button data-t="${k}" class="${k===tab?'on':''}">${l}</button>`).join('');
 $('#main').innerHTML=tab==='dash'?dash():tab==='cal'?cal():tab==='cfg'?cfgView():listView(tab)}
 document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
-if(b.dataset.t){tab=b.dataset.t;ed=null}else if(b.dataset.e){const[k,id]=b.dataset.e.split(':');ed={k,id}}else if(b.dataset.c){ed=null}
+if(b.dataset.t){tab=b.dataset.t;ed=null}else if(b.dataset.m!==undefined){cm=+b.dataset.m||null}else if(b.dataset.a){assign(b.dataset.a);return}else if(b.dataset.e){const[k,id]=b.dataset.e.split(':');ed={k,id}}else if(b.dataset.c){ed=null}
 else if(b.dataset.d){const[k,id]=b.dataset.d.split(':');if(!confirm('この記録を削除しますか？'))return;S[k]=S[k].filter(r=>r.id!==id);save()}
 else if(b.id==='bk'){exp();return}else if(b.dataset.s){setCfg();return}else if(b.dataset.x){localStorage.removeItem('kcfg');canWrite=false;warn('この端末の接続情報を削除しました');tab='cfg'}else return;render()});
 document.addEventListener('submit',e=>{e.preventDefault();const k=e.target.dataset.k,sp=SPEC[k],r={};new FormData(e.target).forEach((v,n)=>r[n]=v);
@@ -110,5 +124,5 @@ if(!r[sp.req]){alert('日付を入力してください');return}if(k==='fh'&&r.
 if(ed&&ed.k===k){const i=S[k].findIndex(x=>x.id===ed.id);S[k][i]={...S[k][i],...r}}else S[k].push({id:uid(),...r});
 ed=null;save();render()});
 $('#yr').onchange=e=>{Y=+e.target.value;ed=null;render()};
-(async()=>{Y=Math.max(2026,fy(now()));await boot();render()})();
+(async()=>{Y=Math.max(2026,fy(now()));await boot();await loadEv();render()})();
 </script></body></html>
