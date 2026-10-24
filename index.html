@@ -1,37 +1,40 @@
 <!doctype html>
 <html lang="ja"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>勤怠管理</title><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 16 16%27%3E%3Ctext y=%2713%27 font-size=%2713%27%3E🗓️%3C/text%3E%3C/svg%3E">
 <style>
-:root{--bg:#f6f7f9;--fg:#1f2933;--card:#fff;--line:#d8dde3;--mut:#6b7785;--acc:#2f5d8a;--red:#c0392b;--grn:#2e7d32;
---c1:#9b30ff;--c2:#e4d4ff;--c3:#ffec3d;--c4:#ffd980;--c5:#fff2cc;--c6:#fcd9c4;--sat:#2b6cb0;--sun:#c0392b;
-box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--tcp:40%;--bg:#15191e;--fg:#e6eaee;--card:#1e242b;--line:#36404a;--mut:#98a4b0;--acc:#7fb2e5;--c2:#4a3a6e;--c5:#5a4f2a;--c4:#7a5f1e;--c6:#6b4430}}
-:root[data-theme="dark"]{--tcp:40%;--bg:#15191e;--fg:#e6eaee;--card:#1e242b;--line:#36404a;--mut:#98a4b0;--acc:#7fb2e5;--c2:#4a3a6e;--c5:#5a4f2a;--c4:#7a5f1e;--c6:#6b4430}
-html{height:100%}body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.5 "Yu Gothic","Hiragino Sans",Meiryo,sans-serif}
-header{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:10px 14px;background:var(--card);border-bottom:1px solid var(--line)}
-h1{font-size:17px;margin:0 auto 0 0}
-select,input,button{font:inherit;color:var(--fg);background:var(--card);border:1px solid var(--line);border-radius:6px;padding:4px 8px}
-button{cursor:pointer}button.p{background:var(--acc);color:#fff;border-color:var(--acc)}
-nav{display:flex;gap:4px;padding:8px 14px 0;flex-wrap:wrap}nav button{border-radius:6px 6px 0 0;background:var(--tc);background:color-mix(in srgb,var(--tc) var(--tcp,100%),var(--card));color:var(--fg)}nav button.on{font-weight:700;border-color:var(--acc);box-shadow:inset 0 -3px 0 var(--acc)}
-main{padding:12px 14px;max-width:1200px}
-.msg{background:#fdecea;color:#7a1f16;padding:6px 14px}
+:root{--ink:#27425e;--serif:"Yu Gothic UI","Yu Gothic","Hiragino Kaku Gothic ProN",Meiryo,sans-serif;
+--bg:#f6f7f9;--card:#ffffff;--line:#eadfce;--fg:#3f342a;--mut:#8c7d6d;--acc:#6e9cc9;--hd1:#e8f0f8;--hd2:#d2e2f2;--btn:#d0e2f5;--btnb:#a9c8e8;--btnt:#213a54;--th:#e8f0f8;--t1:#fdeee0;--t2:#fff6d9;--t3:#e9f3df;--t4:#fde3e6;
+--red:#b8483a;--grn:#4f8a4b;--sat:#4a78a8;--sun:#c0503f;--c1:#9b30ff;--c2:#e4d4ff;--c3:#ffec3d;--c4:#ffd980;--c5:#fff2cc;--c6:#fcd9c4;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+html{height:100%}body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.55 "Yu Gothic","Hiragino Sans",Meiryo,sans-serif}
+header{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin:14px 14px 0;padding:14px 18px;border-radius:16px;background:linear-gradient(135deg,var(--hd1),var(--hd2));border:1px solid var(--line);border-bottom:3px solid var(--acc);box-shadow:0 2px 6px rgba(60,60,60,.08)}
+.ic{width:42px;height:42px;border-radius:12px;background:#fff;display:grid;place-items:center;font-size:22px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.tt{margin-right:auto}h1{font:800 24px/1.2 var(--serif);margin:0;letter-spacing:.04em;color:var(--ink)}
+header label{font-weight:700;color:var(--fg)}#yr{font-weight:700}
+select,input,button{font:inherit;color:var(--fg);background:#fff;border:1px solid var(--line);border-radius:8px;padding:5px 9px}
+button{cursor:pointer}button:hover{filter:brightness(.97)}button.p{background:var(--btn);color:var(--btnt);border-color:var(--btnb);font-weight:700}
+nav{display:flex;gap:4px;padding:12px 14px 0;flex-wrap:wrap}
+nav button{border-radius:6px 6px 0 0;background:var(--tc);color:var(--fg)}
+nav button.on{font-weight:700;border-color:var(--acc);box-shadow:inset 0 -3px 0 var(--acc)}
+main{padding:14px;max-width:1200px}
+main h2{margin:0 0 12px;padding:9px 16px;border-radius:12px;background:var(--pc);background:color-mix(in srgb,var(--pc) 75%,var(--card));border:1px solid var(--line);font:700 17px/1.4 var(--serif)}
+.msg{background:#fdecea;color:#7a1f16;padding:6px 14px;margin:10px 14px 0;border-radius:10px}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
-.card h3{margin:0 0 4px;font-size:13px;color:var(--mut);font-weight:600}.big{font-size:26px;font-weight:700}.sub{color:var(--mut);font-size:12px}
-.bad{color:var(--red);font-weight:700}.ok{color:var(--grn);font-weight:700}
-.todo{display:flex;justify-content:space-between;padding:2px 0}
-.wrap{overflow-x:auto}table{border-collapse:collapse;width:100%;background:var(--card)}
-th,td{border:1px solid var(--line);padding:3px 7px;text-align:left;white-space:nowrap}th{background:var(--bg);font-size:12px}
-form{display:flex;flex-wrap:wrap;gap:8px;align-items:end;margin:10px 0;padding:10px;background:var(--card);border:1px solid var(--line);border-radius:8px}
+.card h3{margin:0 0 4px;font-size:13px;color:var(--mut);font-weight:700}.big{font:700 26px/1.25 var(--serif)}.sub{color:var(--mut);font-size:12px}
+.bad{color:var(--red);font-weight:700}.ok{color:var(--grn);font-weight:700}.todo{display:flex;justify-content:space-between;padding:2px 0}
+.wrap{overflow-x:auto}table{border-collapse:separate;border-spacing:0;width:100%;background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+th,td{border-bottom:1px solid var(--line);padding:5px 9px;text-align:left;white-space:nowrap}th{background:var(--th);font-size:12px}
+form{display:flex;flex-wrap:wrap;gap:8px;align-items:end;margin:0 0 12px;padding:12px;background:var(--card);border:1px solid var(--line);border-radius:14px}
 label{display:flex;flex-direction:column;font-size:12px;color:var(--mut)}
-.cal td{padding:1px 3px;font-size:11px;min-width:58px;text-align:left}.cal th{text-align:center}
+.cal{border-collapse:collapse}.cal td,.cal th{border:1px solid var(--line);padding:1px 4px;font-size:11px;min-width:58px}.cal th{text-align:center}
 .c1{background:var(--c1);color:#fff}.c2{background:var(--c2)}.c3{background:var(--c3);color:#222}.c4{background:var(--c4)}.c5{background:var(--c5)}.c6{background:var(--c6)}
-.sa{color:var(--sat)}.su{color:var(--sun)}.td{outline:2px solid var(--acc);outline-offset:-2px}.na{background:var(--bg)}
-.st{display:inline-block;padding:0 6px;border-radius:8px;background:var(--c5)}.st.s2{background:#ffccff;color:#222}.st.s3{background:#ccc;color:#222}.st.s4{background:#ffc7ce;color:#9c0006}
-.k1{background:#ffccff;color:#222}.k2{background:#79fd79;color:#222}.k3{background:#ffb039;color:#222}.k4{background:#b7b7b7;color:#222}.k5{background:#f071f0;color:#222}.k6{background:#b4ffff;color:#222}.k7{background:#a64d79;color:#fff}.hl{color:var(--red);font-weight:700}tr.td{outline:2px solid var(--acc);outline-offset:-2px}.st.s5{background:#c6ef7a;color:#222}header label{font-weight:700;color:var(--fg)}#yr{font-weight:700}
+.sa{color:var(--sat)}.su{color:var(--sun)}.td{outline:2px solid var(--acc);outline-offset:-2px}tr.td{outline:2px solid var(--acc);outline-offset:-2px}.na{background:var(--bg)}
+.st{display:inline-block;padding:1px 9px;border-radius:999px;background:var(--c5);font-size:12px}.st.s2{background:#ffccff;color:#222}.st.s3{background:#ccc;color:#222}.st.s4{background:#ffc7ce;color:#9c0006}.st.s5{background:#c6ef7a;color:#222}
+.k1{background:#ffccff;color:#222}.k2{background:#79fd79;color:#222}.k3{background:#ffb039;color:#222}.k4{background:#b7b7b7;color:#222}.k5{background:#f071f0;color:#222}.k6{background:#b4ffff;color:#222}.k7{background:#a64d79;color:#fff}.hl{color:var(--red);font-weight:700}
 </style></head><body>
-<header><h1>勤怠管理</h1><label>年度<select id="yr"></select></label><button id="bk">バックアップ書き出し</button></header>
+<header><div class="ic">🗓️</div><div class="tt"><h1>勤怠管理</h1><div class="sub">有給・超過勤務・振替休日</div></div><label>年度<select id="yr"></select></label><button id="bk">バックアップ書き出し</button></header>
 <div id="warn"></div><nav id="nav"></nav><main id="main"></main>
 <script>
 const DEF=()=>({set:{base:20,carry:{},cap:20,hpd:8,halfMax:20,hourMax:40,duty:5},yk:[],ot:[],tu:[],fh:[]});
@@ -67,7 +70,7 @@ if(!r.ok){warn(r.status===409||r.status===422?'他の端末で更新されてい
 sha=(await r.json()).content.sha;warn('')}while(dirty)}catch(e){warn('保存に失敗しました')}busy=false}
 function save(){if(!canWrite){warn('トークン未設定のため保存されません。「接続」タブで設定してください');return}clearTimeout(tm);tm=setTimeout(put,400)}
 function cfgView(){const c=CFG(),f=(i,l,v,t='text')=>`<label>${l}<input id="c-${i}" type="${t}" value="${esc(v||'')}" style="width:220px"></label>`;
-return`<h2 style="font-size:15px">GitHubとの接続（この端末だけに保存されます）</h2><div class="card" style="display:flex;flex-wrap:wrap;gap:8px;align-items:end">${f('owner','ユーザー名',c.owner)}${f('repo','リポジトリ名',c.repo)}${f('branch','ブランチ',c.branch||'main')}${f('path','データファイル',c.path||'data.json')}${f('token','トークン（保存に必要）',c.token,'password')}<button class="p" data-s="1">保存して読み込む</button><button data-x="1">この端末の接続情報を削除</button></div><p class="sub">トークンはこの端末のブラウザにだけ保存され、GitHubとの通信以外には使われません。共用のPCでは、使い終わったら「接続情報を削除」を押してください。</p>`}
+return`<h2>GitHubとの接続（この端末だけに保存されます）</h2><div class="card" style="display:flex;flex-wrap:wrap;gap:8px;align-items:end">${f('owner','ユーザー名',c.owner)}${f('repo','リポジトリ名',c.repo)}${f('branch','ブランチ',c.branch||'main')}${f('path','データファイル',c.path||'data.json')}${f('token','トークン（保存に必要）',c.token,'password')}<button class="p" data-s="1">保存して読み込む</button><button data-x="1">この端末の接続情報を削除</button></div><p class="sub">トークンはこの端末のブラウザにだけ保存され、GitHubとの通信以外には使われません。共用のPCでは、使い終わったら「接続情報を削除」を押してください。</p>`}
 function setCfg(){const v=i=>$('#c-'+i).value.trim();localStorage.setItem('kcfg',JSON.stringify({owner:v('owner'),repo:v('repo'),branch:v('branch')||'main',path:v('path')||'data.json',token:v('token')}));boot().then(loadEv).then(()=>{tab='dash';render()})}
 function exp(){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(S,null,1)],{type:'application/json'}));a.download=`kintai-backup-${now()}.json`;a.click()}
 const warn=t=>$('#warn').innerHTML=t?`<div class="msg">${t}</div>`:'';
@@ -85,7 +88,7 @@ S.tu.filter(r=>fy(r.date)===y).sort(cmp).forEach(u=>{let n=+u.hours||0;o[u.id]=[
 function listView(k){const sp=SPEC[k],x=k==='ot'?otRem():k==='tu'?alloc():{},rec=ed&&ed.k===k?(S[k].find(r=>r.id===ed.id)||{}):{};
 const fld=sp.f.map(([n,l,t])=>{const v=rec[n]??(n==='status'?'未申請':n==='method'?'1日':'');return`<label>${l}`+(Array.isArray(t)?`<select name="${n}">${t.map(o=>`<option${o===v?' selected':''}>${o}</option>`).join('')}</select>`:`<input name="${n}" type="${t}"${t==='number'?' step="0.5" style="width:90px"':''} value="${esc(v)}">`)+'</label>'}).join('');
 const rows=sp.list().sort((a,b)=>a[sp.dt]<b[sp.dt]?-1:1).map(r=>`<tr>${sp.row(r,x).map(c=>`<td>${k==='ot'&&String(c).startsWith('<b')?c:(String(c).startsWith('<span')?c:esc(c))}</td>`).join('')}<td><button data-e="${k}:${r.id}">編集</button> <button data-d="${k}:${r.id}">削除</button></td></tr>`).join('');
-return`<h2 style="font-size:15px">${sp.n}（${Y}年度）</h2><form data-k="${k}">${fld}<button class="p">${rec.id?'更新':'追加'}</button>${rec.id?'<button type="button" data-c="1">取消</button>':''}</form><div class="wrap"><table><tr>${sp.h.map(h=>`<th>${h}</th>`).join('')}<th></th></tr>${rows||`<tr><td colspan="12" class="sub">まだ記録がありません</td></tr>`}</table></div>`}
+return`<h2>${sp.n}（${Y}年度）</h2><form data-k="${k}">${fld}<button class="p">${rec.id?'更新':'追加'}</button>${rec.id?'<button type="button" data-c="1">取消</button>':''}</form><div class="wrap"><table><tr>${sp.h.map(h=>`<th>${h}</th>`).join('')}<th></th></tr>${rows||`<tr><td colspan="12" class="sub">まだ記録がありません</td></tr>`}</table></div>`}
 function dash(){const y=Y,b=S.set,t=taken(y),rm=remain(y),duty=ykY(y).filter(r=>r.kind!=='時間休').reduce((a,r)=>a+days(r),0),
 hf=ykY(y).filter(r=>r.kind==='半休').length,hh=ykY(y).filter(r=>r.kind==='時間休').reduce((a,r)=>a+(+r.hours||0),0),
 oe=S.ot.filter(r=>fy(r.date)===y).reduce((a,r)=>a+(+r.hours||0),0),ou=S.tu.filter(r=>fy(r.date)===y).reduce((a,r)=>a+(+r.hours||0),0),
@@ -115,10 +118,10 @@ h+=`<tr class="${s===n?'td':''}"><td class="${w===6?'sa':off?'su':''}">${mo}/${d
 return h+'</table></div>'}
 function assign(s){const r=S.fh.find(x=>x.id===pk);if(!r||!confirm(`${fm(s)} を振替日にしますか？`))return;if(!r.d1)r.d1=s;else r.d2=s;save();render()}
 async function loadEv(){if(S.ev!==undefined)return;try{const r=await fetch('events.json',{cache:'no-store'});S.ev=r.ok?await r.json():[];if(r.ok&&canWrite&&sha)save()}catch(e){S.ev=[]}}
-document.addEventListener('change',e=>{if(e.target.id==='pk')pk=e.target.value});
+document.addEventListener('change',e=>{if(e.target.id==='pk')pk=e.target.value;});
 function render(){$('#yr').innerHTML=[...new Set([2026,2027,2028,2029,2030,Y])].sort().map(y=>`<option${y===Y?' selected':''}>${y}</option>`).join('');
 $('#nav').innerHTML=[['dash','ダッシュボード'],['cal','カレンダー'],['yk','有給'],['ot','超過勤務'],['tu','振替時間休'],['fh','振替休日'],['ev','行事予定'],['cfg','接続']].map(([k,l])=>`<button data-t="${k}" class="${k===tab?'on':''}" style="--tc:${TC[k]}">${l}</button>`).join('');
-$('#main').style.borderTop='4px solid '+TC[tab];$('#main').innerHTML=tab==='dash'?dash():tab==='cal'?cal():tab==='cfg'?cfgView():listView(tab)}
+$('#main').style.setProperty('--pc',TC[tab]);$('#main').innerHTML=(tab==='dash'?`<h2>ダッシュボード（${Y}年度）</h2>`:tab==='cal'?`<h2>カレンダー（${Y}年度）</h2>`:'')+(tab==='dash'?dash():tab==='cal'?cal():tab==='cfg'?cfgView():listView(tab))}
 document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
 if(b.dataset.t){tab=b.dataset.t;ed=null}else if(b.dataset.m!==undefined){cm=+b.dataset.m||null}else if(b.dataset.a){assign(b.dataset.a);return}else if(b.dataset.e){const[k,id]=b.dataset.e.split(':');ed={k,id}}else if(b.dataset.c){ed=null}
 else if(b.dataset.d){const[k,id]=b.dataset.d.split(':');if(!confirm('この記録を削除しますか？'))return;S[k]=S[k].filter(r=>r.id!==id);save()}
